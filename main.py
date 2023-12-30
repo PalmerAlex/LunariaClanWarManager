@@ -1,5 +1,7 @@
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
+from tkinter import scrolledtext, messagebox, filedialog
+
+
 class ClanWarManager:
     def __init__(self):
         self.teams = {'red': [], 'blue': [], 'green': [], 'yellow': []}
@@ -100,9 +102,9 @@ manager = ClanWarManager()
 def generate_commands():
     try:
         # Fetch data from the GUI
-        team_inputs = {team: text.get('1.0', tk.END) for team, text in team_texts.items()}
-        banned_kits_input = banned_kits_text.get('1.0', tk.END)
-        selected_map = map_name_entry.get()
+        team_inputs = {team: text.get('1.0', tk.END).strip() for team, text in team_texts.items()}
+        banned_kits_input = banned_kits_text.get('1.0', tk.END).strip()
+        selected_map = map_name_entry.get().strip()
 
         # Setting data
         for team, input_text in team_inputs.items():
@@ -113,12 +115,27 @@ def generate_commands():
         # Generating commands
         commands = manager.generate_commands()
 
-        # Display commands
+        # Display commands in the GUI
         commands_text.delete('1.0', tk.END)
         commands_text.insert('1.0', '\n'.join(commands))
 
+        # Save commands to a text file
+        save_commands_to_file(commands)
+
     except ValueError as e:
         messagebox.showerror("Error", str(e))
+
+def save_commands_to_file(commands):
+    # Ask the user for a location and name to save the commands file
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".txt",
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+        title="Save commands as..."
+    )
+    if file_path:  # If a file path was provided
+        with open(file_path, 'w') as file:
+            file.write('\n'.join(commands))
+        messagebox.showinfo("Success", "Commands were saved to:\n" + file_path)
 
 # Create button to generate commands
 generate_button = tk.Button(root, text="Generate Commands", command=generate_commands)
